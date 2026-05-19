@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { Play, Pause, X, Volume2, VolumeX, Maximize2, Minimize2 } from "lucide-react";
 import { successStories } from "@/data/successStories";
@@ -14,6 +14,12 @@ const fmtTime = (s: number) => {
 };
 
 export default function AlumniSection() {
+  // Stories that show in the testimonial slider (must have a video)
+  const sliderStories = useMemo(
+    () => successStories.filter((s) => s.video),
+    []
+  );
+
   const [active, setActive] = useState(0);
   const [panelAnimKey, setPanelAnimKey] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -35,7 +41,7 @@ export default function AlumniSection() {
   const lightboxWrapRef = useRef<HTMLDivElement | null>(null);
   const controlsHideTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const current = successStories[active];
+  const current = sliderStories[active] || sliderStories[0];
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -62,6 +68,15 @@ export default function AlumniSection() {
     setTimeout(() => {
       testimonialRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
+  };
+
+  // ────────────── MAP PIN CLICK ──────────────
+  // Clicking any pin (incl. KSA) maps to the first slider story for that city.
+  // If no slider story exists for the city, do nothing (just visual pin).
+  const handlePinClick = (city: string) => {
+    const sliderIndex = sliderStories.findIndex((s) => s.city === city);
+    if (sliderIndex === -1) return;
+    handleStoryClick(sliderIndex);
   };
 
   // ────────────── LIGHTBOX OPEN/CLOSE ──────────────
@@ -620,7 +635,7 @@ export default function AlumniSection() {
           </p>
         </div>
 
-        {/* MAP — FULL WIDTH */}
+        {/* MAP — FULL WIDTH (unchanged — shows all 5 country pins) */}
         <div className="alumni-map-wrap">
           <div className="alumni-map-stage">
             <div className="world-map-img-wrap">
@@ -634,25 +649,25 @@ export default function AlumniSection() {
             </div>
 
             {successStories.map((item, i) => {
-  // Skip duplicate pins for the same city — show pin only at the first occurrence
-  const firstIndex = successStories.findIndex((s) => s.city === item.city);
-  if (firstIndex !== i) return null;
+              // Skip duplicate pins for the same city — show pin only at the first occurrence
+              const firstIndex = successStories.findIndex((s) => s.city === item.city);
+              if (firstIndex !== i) return null;
 
-  // Pin is active if active story belongs to this city
-  const isActive = successStories[active]?.city === item.city;
-  return (
-    <button
-      key={item.city}
-      type="button"
-      onClick={() => handleStoryClick(i)}
-      style={{
-        top: isMobile && item.yMobile ? item.yMobile : item.y,
-        left: isMobile && item.xMobile ? item.xMobile : item.x,
-      }}
-      className={`alumni-pin ${isActive ? "alumni-pin-active" : ""}`}
-      aria-label={`${item.city} market`}
-      aria-pressed={isActive}
-    >
+              // Pin is active if active SLIDER story belongs to this city
+              const isActive = current?.city === item.city;
+              return (
+                <button
+                  key={item.city}
+                  type="button"
+                  onClick={() => handlePinClick(item.city)}
+                  style={{
+                    top: isMobile && item.yMobile ? item.yMobile : item.y,
+                    left: isMobile && item.xMobile ? item.xMobile : item.x,
+                  }}
+                  className={`alumni-pin ${isActive ? "alumni-pin-active" : ""}`}
+                  aria-label={`${item.city} market`}
+                  aria-pressed={isActive}
+                >
                   <svg
                     className="alumni-pin-icon"
                     viewBox="0 0 38 50"
@@ -673,7 +688,7 @@ export default function AlumniSection() {
           </div>
         </div>
 
-        {/* TESTIMONIAL PANEL */}
+        {/* TESTIMONIAL PANEL — only shows stories with videos (2 KSA stories) */}
        <div
   ref={testimonialRef}
   className="max-w-[1100px] mx-auto px-4 relative z-10"
@@ -755,7 +770,7 @@ export default function AlumniSection() {
 </div>
 
               <div className="flex gap-2 mt-5">
-                {successStories.map((_, i) => (
+                {sliderStories.map((_, i) => (
                   <button
                     key={i}
                     type="button"
@@ -763,7 +778,7 @@ export default function AlumniSection() {
                     className={`h-1 rounded-full transition-all cursor-pointer ${
                       i === active ? "w-6 bg-[#00FE4E]" : "w-3 bg-white/30 hover:bg-white/50"
                     }`}
-                    aria-label={`Go to ${successStories[i].city}`}
+                    aria-label={`Go to ${sliderStories[i].city} story`}
                   />
                 ))}
               </div>

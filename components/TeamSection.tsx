@@ -13,7 +13,7 @@ export default function TeamSection() {
           background: #fff;
           padding: 56px 0 24px;
         }
-        @media (min-width: 1024px) { .team-section { padding: 80px 0 32px; } }
+        @media (min-width: 1024px) { .team-section { padding: 80px 0 12px; } }
         .team-bg-circuit {
           position: absolute;
           right: 2%;
