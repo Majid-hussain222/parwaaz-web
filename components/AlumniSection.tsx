@@ -612,7 +612,7 @@ export default function AlumniSection() {
         }
       `}</style>
 
-      <section className="alumni-section pt-0 md:pt-24 pb-16 md:pb-20 bg-white">
+      <section className="alumni-section pt-0 md:pt-4 pb-16 md:pb-20 bg-white">
         {/* HEADER */}
         <div className="text-center mb-6 px-4">
           <p className="text-xs tracking-widest text-gray-500">SUCCESS STORIES</p>
